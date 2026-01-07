@@ -246,85 +246,127 @@ function startLanSession(hostMode, guestRoomId = null) {
         peer = null;
     }
 
-    // Initialize Peer with Robust Config for VPN/NAT
-    peer = new Peer(null, {
-        debug: 2,
-        config: {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' }
-            ]
-        }
-    });
+    // P2P Config (Merge of Remote Custom Server + Local Robust STUN)
+    const customHost = document.getElementById('p2p-host') ? document.getElementById('p2p-host').value.trim() : '';
+    const customPort = document.getElementById('p2p-port') ? document.getElementById('p2p-port').value.trim() : '';
+    const customPath = document.getElementById('p2p-path') ? document.getElementById('p2p-path').value.trim() : '';
+
+    let peerConfig = {};
+
+    if (customHost) {
+        // User provided custom server (Remote Feature)
+        peerConfig = {
+            host: customHost,
+            port: customPort ? parseInt(customPort) : (customHost === 'localhost' ? 9000 : 443),
+            path: customPath || '/',
+            secure: (customPort === '443' || customHost !== 'localhost'),
+            debug: 1,
+            pingInterval: 5000
+        };
+        logSystem(`Using Custom P2P Server: ${peerConfig.host}:${peerConfig.port}`);
+    } else {
+        // Default: Use Public Server + Robust STUN (Local Feature)
+        // Optimization: Added stun.qq.com for CN accessibility and Port 3478 for firewall traversal
+        peerConfig = {
+            debug: 2,
+            pingInterval: 5000, // Aggressive Keepalive
+            config: {
+                iceServers: [
+                    // TURN (Relay) - The "Nuclear Option" for Symmetric NAT
+                    {
+                        urls: 'turn:openrelay.metered.ca:80',
+                        username: 'openrelayproject',
+                        credential: 'openrelayproject'
+                    },
+                    {
+                        urls: 'turn:openrelay.metered.ca:443',
+                        username: 'openrelayproject',
+                        credential: 'openrelayproject'
+                    },
+                    {
+                        urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                        username: 'openrelayproject',
+                        credential: 'openrelayproject'
+                    },
+                    // STUN (Direct P2P)
+                    { urls: 'stun:stun.qq.com:3478' },
+                    { urls: 'stun:global.stun.twilio.com:3478' },
+                    { urls: 'stun:stun.l.google.com:19302' }
+                ],
+                iceCandidatePoolSize: 10,
+                iceTransportPolicy: 'all' // Try everything
+            }
+        };
+    }
+
+    // Initialize Peer
+    peer = new Peer(null, peerConfig);
 
     peer.on('open', (id) => {
+        logSystem(`✅ [Signaling] Connected to Server. ID: ${id}`);
         console.log('My Peer ID is: ' + id);
 
         if (isHost) {
             document.getElementById('host-room-id').innerText = id;
             updateLanStatus(`🟢 Room Created.`);
-            logSystem(`Room Created. Waiting for guests...`);
+            logSystem(`Room Ready. Waiting for guests...`);
             lanConnected = true;
             broadcastPresence();
         } else {
             // Guest Mode
-            if (!guestRoomId) {
-                // Should not happen if UI logic is correct
-                return alert('No Room ID provided');
-            }
+            if (!guestRoomId) return alert('No Room ID provided');
             connectToHost(guestRoomId);
         }
     });
 
-
-
     peer.on('connection', (conn) => {
         // Handle incoming connection (Host side)
+        logSystem(`[Signaling] Incoming connection handshake...`);
         if (isHost) {
             setupConnection(conn);
-            logSystem(`New peer joined!`);
-            // Sync history to new joiner
-            setTimeout(() => {
-                if (conn.open) {
-                    // 1. Sync History
-                    conn.send({ type: 'SYNC_HISTORY', history: chatHistory });
-
-                    // 2. Sync Self Presence
-                    broadcastPresence(); // This broadcasts to ALL, which includes the new conn if setupConnection worked right away.
-
-                    // 3. Sync Known Roster to New Guest
-                    Object.values(peerRoster).forEach(member => {
-                        conn.send({ type: 'PRESENCE', payload: member });
-                    });
-                }
-            }, 1000);
         }
     });
 
     peer.on('error', (err) => {
         console.error(err);
         updateLanStatus(`⚠️ Error: ${err.type}`);
-        logSystem(`P2P Error: ${err.type}`);
+
+        // Detailed Diagnostics for User
+        if (err.type === 'peer-unavailable') {
+            logSystem(`❌ [Signaling] Room ID not found on server.`);
+            logSystem(`Diagnostic: Host may have disconnected, or you are on different signaling swarms.`);
+        } else if (err.type === 'network') {
+            logSystem(`❌ [Network] Lost connection to Signaling Server.`);
+        } else if (err.type === 'browser-incompatible') {
+            logSystem(`❌ [Fatal] Browser does not support WebRTC.`);
+        } else {
+            logSystem(`❌ [Error] ${err.type}: ${err.message}`);
+        }
     });
 
     peer.on('disconnected', () => {
         updateLanStatus('🔴 Disconnected from signaling.');
+        logSystem(`[Signaling] Connection Lost. Reconnecting...`);
+        peer.reconnect();
     });
 }
 
 function connectToHost(hostId) {
     updateLanStatus(`Connecting to ${hostId}...`);
-    const conn = peer.connect(hostId);
+    logSystem(`[Signaling] Looking up Host ID: ${hostId}...`);
+
+    // Attempt Connection
+    const conn = peer.connect(hostId, {
+        reliable: true,
+        serialization: 'json'
+    });
 
     // Wait for open
     conn.on('open', () => {
         lanConnected = true;
         hostConn = conn;
         updateLanStatus(`🟢 Connected to Room`);
-        logSystem(`Joined Room: ${hostId}`);
+        logSystem(`✅ [P2PTransport] Connection ESTABLISHED!`);
         setupConnection(conn);
         setTimeout(broadcastPresence, 1000);
     });
@@ -332,20 +374,35 @@ function connectToHost(hostId) {
     // Add explicit ICE monitoring for user debugging
     setTimeout(() => {
         if (conn && conn.peerConnection) {
+            logSystem(`[ICE] Starting Candidate Search (STUN)...`);
+
+            conn.peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    logSystem(`[ICE] Found Candidate: ${event.candidate.candidate.split(' ')[4]}`); // Log IP type/Port
+                } else {
+                    logSystem(`[ICE] Candidate gathering complete.`);
+                }
+            };
+
             conn.peerConnection.oniceconnectionstatechange = () => {
                 const state = conn.peerConnection.iceConnectionState;
-                logSystem(`P2P State: ${state}`);
+                logSystem(`[P2P State] Changed to: ${state}`);
+
+                if (state === 'connected' || state === 'completed') {
+                    updateLanStatus(`🟢 Encryption Handshake OK`);
+                }
                 if (state === 'failed' || state === 'disconnected') {
                     updateLanStatus(`🔴 Connection Failed (${state})`);
-                    logSystem(`Tip: You might need to disable VPN or use the same VPN node.`);
+                    logSystem(`[Failure] UDP blocked or NAT Symmetric. Try closing VPN.`);
                 }
             };
         }
-    }, 1000);
+    }, 500);
 
     conn.on('error', (err) => {
         console.error('Conn Error', err);
         updateLanStatus(`🔴 Error: ${err}`);
+        logSystem(`[Conn Error] ${err}`);
     });
 }
 
