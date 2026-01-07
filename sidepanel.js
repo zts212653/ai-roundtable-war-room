@@ -246,8 +246,18 @@ function startLanSession(hostMode, guestRoomId = null) {
         peer = null;
     }
 
-    // Initialize Peer
-    peer = new Peer();
+    // Initialize Peer with Google STUN servers for better NAT traversal
+    const peerConfig = {
+        config: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        },
+        debug: 1
+    };
+    peer = new Peer(peerConfig);
 
     peer.on('open', (id) => {
         console.log('My Peer ID is: ' + id);
