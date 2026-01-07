@@ -246,8 +246,19 @@ function startLanSession(hostMode, guestRoomId = null) {
         peer = null;
     }
 
-    // Initialize Peer
-    peer = new Peer();
+    // Initialize Peer with Robust Config for VPN/NAT
+    peer = new Peer(null, {
+        debug: 2,
+        config: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' }
+            ]
+        }
+    });
 
     peer.on('open', (id) => {
         console.log('My Peer ID is: ' + id);
@@ -308,16 +319,34 @@ function connectToHost(hostId) {
     updateLanStatus(`Connecting to ${hostId}...`);
     const conn = peer.connect(hostId);
 
+    // Wait for open
     conn.on('open', () => {
         lanConnected = true;
         hostConn = conn;
         updateLanStatus(`🟢 Connected to Room`);
         logSystem(`Joined Room: ${hostId}`);
         setupConnection(conn);
-        setTimeout(broadcastPresence, 1000); // Wait a sec for setup
+        setTimeout(broadcastPresence, 1000);
     });
 
-    conn.on('error', (err) => console.error('Conn Error', err));
+    // Add explicit ICE monitoring for user debugging
+    setTimeout(() => {
+        if (conn && conn.peerConnection) {
+            conn.peerConnection.oniceconnectionstatechange = () => {
+                const state = conn.peerConnection.iceConnectionState;
+                logSystem(`P2P State: ${state}`);
+                if (state === 'failed' || state === 'disconnected') {
+                    updateLanStatus(`🔴 Connection Failed (${state})`);
+                    logSystem(`Tip: You might need to disable VPN or use the same VPN node.`);
+                }
+            };
+        }
+    }, 1000);
+
+    conn.on('error', (err) => {
+        console.error('Conn Error', err);
+        updateLanStatus(`🔴 Error: ${err}`);
+    });
 }
 
 function setupConnection(conn) {
@@ -728,32 +757,46 @@ function renderRoster() {
     list.innerHTML = '';
 
     Object.values(peerRoster).forEach(member => {
-        // 1. Human Row
-        const humanRow = document.createElement('div');
-        humanRow.style.display = 'flex';
-        humanRow.style.alignItems = 'center';
+        // Create Member Card
+        const memberDiv = document.createElement('div');
+        memberDiv.className = 'roster-member' + (member.id === peer.id ? ' is-me' : '');
 
-        const nameSpan = document.createElement('span');
-        nameSpan.style.fontWeight = 'bold';
-        nameSpan.innerText = '👤 ' + member.name + (member.isHost ? ' (Host)' : '');
-        if (member.id === peer.id) nameSpan.innerText += ' (You)';
+        // Header Line
+        const header = document.createElement('div');
+        header.className = 'member-header';
 
-        humanRow.appendChild(nameSpan);
-        list.appendChild(humanRow);
+        const roleIcon = member.isHost ? '👑' : '👤';
+        header.innerHTML = `${roleIcon} ${member.name} ${member.id === peer.id ? '<span style="opacity:0.6;font-weight:normal">(You)</span>' : ''}`;
+        memberDiv.appendChild(header);
 
-        // 2. AI Rows (Indented)
+        // Agents Line
         if (member.agents && member.agents.length > 0) {
-            member.agents.forEach(agentName => {
-                const aiRow = document.createElement('div');
-                aiRow.style.display = 'flex';
-                aiRow.style.alignItems = 'center';
-                aiRow.style.marginLeft = '15px'; // Indent
-                aiRow.style.fontSize = '11px';
-                aiRow.style.color = '#aaa';
+            const agentsDiv = document.createElement('div');
+            agentsDiv.className = 'member-agents';
 
-                aiRow.innerText = `🤖 ${agentName} (${member.name})`;
-                list.appendChild(aiRow);
+            member.agents.forEach(agentName => {
+                // Determine style key
+                let styleKey = 'gpt';
+                if (agentName.toLowerCase().includes('gemini')) styleKey = 'gemini';
+                else if (agentName.toLowerCase().includes('claude')) styleKey = 'claude';
+                else if (agentName.toLowerCase().includes('studio')) styleKey = 'aistudio';
+
+                const badge = document.createElement('span');
+                badge.className = `agent-badge ${styleKey}`;
+                badge.innerText = agentName; // e.g. "Gemini"
+                agentsDiv.appendChild(badge);
             });
+            memberDiv.appendChild(agentsDiv);
+        } else {
+            // No agents active
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.fontSize = '10px';
+            emptyDiv.style.color = '#666';
+            emptyDiv.style.marginLeft = '4px';
+            emptyDiv.innerText = '(No active agents)';
+            memberDiv.appendChild(emptyDiv);
         }
+
+        list.appendChild(memberDiv);
     });
 }
