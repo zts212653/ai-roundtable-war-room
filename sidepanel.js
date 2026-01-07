@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // LAN Listeners
     // LAN Listeners
     document.getElementById('btn-lan-toggle').addEventListener('click', () => {
-        document.getElementById('lan-panel').classList.toggle('visible');
+        document.getElementById('lan-panel').classList.toggle('hidden');
     });
 
     // New P2P UI Handlers
@@ -312,6 +312,14 @@ function startLanSession(hostMode, guestRoomId = null) {
             logSystem(`Room Ready. Waiting for guests...`);
             lanConnected = true;
             broadcastPresence();
+
+            // Auto-collapse UI
+            document.getElementById('lan-panel').classList.add('hidden');
+            const btnToggle = document.getElementById('btn-lan-toggle');
+            btnToggle.style.background = '#00e676'; // Bright Green
+            btnToggle.style.color = '#000';
+            btnToggle.innerText = '🔗';
+            btnToggle.title = "Connected (Host) - Click to Configure";
         } else {
             // Guest Mode
             if (!guestRoomId) return alert('No Room ID provided');
@@ -367,6 +375,15 @@ function connectToHost(hostId) {
         hostConn = conn;
         updateLanStatus(`🟢 Connected to Room`);
         logSystem(`✅ [P2PTransport] Connection ESTABLISHED!`);
+
+        // Auto-collapse UI
+        document.getElementById('lan-panel').classList.add('hidden');
+        const btnToggle = document.getElementById('btn-lan-toggle');
+        btnToggle.style.background = '#00e676';
+        btnToggle.style.color = '#000';
+        btnToggle.innerText = '🔗';
+        btnToggle.title = "Connected (Guest) - Click to Configure";
+
         setupConnection(conn);
         setTimeout(broadcastPresence, 1000);
     });

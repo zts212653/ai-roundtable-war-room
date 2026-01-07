@@ -16,57 +16,62 @@ body {
     width: 6px;
     height: 6px;
 }
+
 ::-webkit-scrollbar-track {
-    background: #1a1a1a; 
+    background: #1a1a1a;
 }
+
 ::-webkit-scrollbar-thumb {
-    background: #444; 
+    background: #444;
     border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-    background: #555; 
+    background: #555;
 }
 
 h2 {
-    margin: 0 0 16px 0;
+    margin: 0 0 8px 0;
     color: #fff;
     text-align: center;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
-    text-shadow: 0 0 10px rgba(255,255,255,0.1);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
-.status-panel, .lan-panel {
+.status-panel,
+.lan-panel {
     background: rgba(26, 26, 26, 0.6);
     backdrop-filter: blur(10px);
-    padding: 12px;
+    padding: 8px;
     border-radius: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
 }
 
-.status-panel:hover, .lan-panel:hover {
+.status-panel:hover,
+.lan-panel:hover {
     border-color: rgba(255, 255, 255, 0.15);
 }
 
 .agent-row {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
-    padding: 6px 8px;
+    margin-bottom: 4px;
+    padding: 4px 8px;
     border-radius: 6px;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255, 255, 255, 0.03);
     transition: background 0.2s;
 }
 
 .agent-row:hover {
-    background: rgba(255,255,255,0.06);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .agent-checkbox {
@@ -75,12 +80,12 @@ h2 {
 }
 
 .status-dot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: #555;
     margin-left: auto;
-    box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
 .status-dot.active {
@@ -92,23 +97,30 @@ h2 {
     flex-grow: 1;
     overflow-y: auto;
     background: rgba(17, 17, 17, 0.8);
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 12px;
-    margin-bottom: 12px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    margin-bottom: 8px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .message-block {
     margin-bottom: 16px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .msg-sender {
@@ -121,18 +133,36 @@ h2 {
 }
 
 /* Agent Colors */
-.sender-gemini { color: #4facfe; text-shadow: 0 0 10px rgba(79, 172, 254, 0.3); }
-.sender-claude { color: #d7a159; text-shadow: 0 0 10px rgba(215, 161, 89, 0.3); }
-.sender-gpt { color: #10a37f; text-shadow: 0 0 10px rgba(16, 163, 127, 0.3); }
-.sender-aistudio { color: #ff5252; text-shadow: 0 0 10px rgba(255, 82, 82, 0.3); }
-.sender-user { color: #ccc; }
+.sender-gemini {
+    color: #4facfe;
+    text-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
+}
+
+.sender-claude {
+    color: #d7a159;
+    text-shadow: 0 0 10px rgba(215, 161, 89, 0.3);
+}
+
+.sender-gpt {
+    color: #10a37f;
+    text-shadow: 0 0 10px rgba(16, 163, 127, 0.3);
+}
+
+.sender-aistudio {
+    color: #ff5252;
+    text-shadow: 0 0 10px rgba(255, 82, 82, 0.3);
+}
+
+.sender-user {
+    color: #ccc;
+}
 
 .msg-content {
     white-space: pre-wrap;
     outline: none;
     padding: 8px 10px;
     border-radius: 8px;
-    background: rgba(30,30,30,0.5);
+    background: rgba(30, 30, 30, 0.5);
     color: #eee;
     font-size: 14px;
     line-height: 1.6;
@@ -141,9 +171,9 @@ h2 {
 }
 
 .msg-content:focus {
-    background: rgba(40,40,40,0.8);
+    background: rgba(40, 40, 40, 0.8);
     border-color: #555;
-    box-shadow: 0 0 0 2px rgba(85,85,85,0.3);
+    box-shadow: 0 0 0 2px rgba(85, 85, 85, 0.3);
 }
 
 /* Controls */
@@ -191,6 +221,7 @@ button:active {
     color: white;
     box-shadow: 0 4px 12px rgba(98, 0, 234, 0.3);
 }
+
 .btn-broadcast:hover {
     filter: brightness(1.1);
 }
@@ -200,29 +231,32 @@ button:active {
     color: white;
     box-shadow: 0 4px 12px rgba(0, 150, 136, 0.3);
 }
+
 .btn-harvest:hover {
     filter: brightness(1.1);
 }
 
 .btn-mini {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     color: #aaa;
     border-radius: 4px;
     padding: 4px 8px;
 }
+
 .btn-mini:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     color: #fff;
 }
 
 .btn-link {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
     color: #ddd;
     font-size: 12px;
     padding: 6px 12px;
 }
+
 .btn-link:hover {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 /* Roster / LAN */
@@ -236,10 +270,11 @@ button:active {
 .roster-member {
     display: flex;
     flex-direction: column;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255, 255, 255, 0.03);
     border-radius: 8px;
     padding: 8px;
-    border-left: 3px solid #6200ea; /* Host default? */
+    border-left: 3px solid #6200ea;
+    /* Host default? */
 }
 
 .roster-member.is-me {
@@ -265,21 +300,36 @@ button:active {
 
 .agent-badge {
     font-size: 11px;
-    background: rgba(0,0,0,0.3);
+    background: rgba(0, 0, 0, 0.3);
     padding: 2px 8px;
     border-radius: 12px;
     color: #ccc;
     display: flex;
     align-items: center;
     gap: 4px;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Agent Badge Colors */
-.agent-badge.gemini { border-color: rgba(79, 172, 254, 0.4); color: #8bc1ff; }
-.agent-badge.claude { border-color: rgba(215, 161, 89, 0.4); color: #ffdca8; }
-.agent-badge.gpt { border-color: rgba(16, 163, 127, 0.4); color: #8affd1; }
-.agent-badge.aistudio { border-color: rgba(255, 82, 82, 0.4); color: #ffb4b4; }
+.agent-badge.gemini {
+    border-color: rgba(79, 172, 254, 0.4);
+    color: #8bc1ff;
+}
+
+.agent-badge.claude {
+    border-color: rgba(215, 161, 89, 0.4);
+    color: #ffdca8;
+}
+
+.agent-badge.gpt {
+    border-color: rgba(16, 163, 127, 0.4);
+    color: #8affd1;
+}
+
+.agent-badge.aistudio {
+    border-color: rgba(255, 82, 82, 0.4);
+    color: #ffb4b4;
+}
 
 
 .lan-input {
@@ -291,6 +341,7 @@ button:active {
     margin-bottom: 8px;
     border-radius: 6px;
 }
+
 .lan-status {
     font-size: 11px;
     color: #888;
@@ -299,7 +350,10 @@ button:active {
     font-family: monospace;
 }
 
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
+
 .toolbar {
     display: flex;
     justify-content: space-between;
@@ -310,6 +364,7 @@ button:active {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+
 .toggle-row {
     font-size: 12px;
     color: #aaa;
