@@ -46,5 +46,24 @@ It connects to your **already open** tabs of ChatGPT, Claude, Gemini, and Google
 
 This is a proof-of-concept tool. Pull requests to improve specific "Drivers" (the scripts that talk to each AI website) are welcome!
 
+## 🔗 Multiplayer (P2P Rooms)
+
+Invite others to join your War Room using instant P2P connections. No server setup required.
+
+### How to Use
+
+1.  **Open Panel**: Click the **🔗** icon in the header.
+2.  **Host a Room**:
+    *   Click **🏠 Create Room**.
+    *   Wait for your **Room ID** to appear (green text).
+    *   Click the ID to copy it and send it to your team.
+3.  **Join a Room**:
+    *   Click **➡️ Join Room**.
+    *   Paste the Room ID.
+    *   Click **Connect**.
+4.  **Sync**: Once connected, all prompts and AI responses are shared instantly.
+
+> **Note**: Connectivity is handled via public PeerJS signaling. Data transmission is direct P2P (encrypted via WebRTC).
+
 ---
 *Built for the [Zhufeng Universe] community.*

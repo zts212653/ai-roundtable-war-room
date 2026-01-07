@@ -220,14 +220,96 @@
             font-weight: bold;
             display: inline-block;
         }
+
+        .lan-panel {
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            display: none;
+            /* Hidden by default */
+        }
+
+        .lan-panel.visible {
+            display: block;
+        }
+
+        .lan-input {
+            width: 100%;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 5px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        .lan-status {
+            font-size: 11px;
+            color: #888;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 
 <body>
     <h2>
         AI Roundtable 🛡️
-        <button id="btn-clear" class="btn-mini" title="Clear All Status">🗑️</button>
+        <div style="margin-left:auto; display:flex; gap:5px;">
+            <button id="btn-lan-toggle" class="btn-mini" title="LAN / Multiplayer">🔗</button>
+            <button id="btn-clear" class="btn-mini" title="Clear All Status">🗑️</button>
+        </div>
     </h2>
+
+    <!-- LAN Panel -->
+    <div id="lan-panel" class="lan-panel">
+        <h3 style="margin:0 0 8px 0; font-size:14px; text-transform: uppercase; color:#aaa;">P2P Room</h3>
+
+        <!-- Username -->
+        <div style="margin-bottom:8px; display:flex; align-items:center; gap:5px;">
+            <span style="font-size:12px; color:#888;">Name:</span>
+            <input type="text" id="my-username" class="lan-input" style="margin-bottom:0; flex:1;"
+                placeholder="Your Name" value="">
+        </div>
+
+        <!-- Step 1: Mode Selection -->
+        <div id="p2p-step-1" style="display:flex; gap:5px;">
+            <button id="btn-mode-host" class="btn-link" style="flex:1; background:#333;">🏠 Create Room</button>
+            <button id="btn-mode-join" class="btn-link" style="flex:1; background:#444;">➡️ Join Room</button>
+        </div>
+
+        <!-- Step 2: Host View -->
+        <div id="p2p-step-host" class="hidden" style="margin-top:5px;">
+            <div style="font-size:11px; color:#aaa; margin-bottom:4px;">Your Room ID:</div>
+            <div id="host-room-id"
+                style="background:#000; padding:8px; color:#4caf50; font-family:monospace; text-align:center; user-select:all; border:1px solid #333; cursor:pointer;"
+                title="Click to copy">Generatine...</div>
+            <div style="font-size:10px; color:#666; text-align:center; margin-top:2px;">(Share this with guests)</div>
+        </div>
+
+        <!-- Step 2: Guest View -->
+        <div id="p2p-step-guest" class="hidden" style="margin-top:5px;">
+            <input type="text" id="guest-room-input" class="lan-input" placeholder="Paste Room ID here...">
+            <button id="btn-guest-connect" class="btn-link" style="width:100%; background:#2196F3;">Connect</button>
+        </div>
+
+        <div id="lan-status-msg" class="lan-status" style="margin-top:8px; border-top:1px solid #333; padding-top:4px;">
+            Offline</div>
+
+        <!-- Room Roster -->
+        <div id="room-roster" class="hidden" style="margin-top:10px; border-top:1px dashed #444; padding-top:5px;">
+            <div style="font-size:10px; color:#aaa; margin-bottom:5px;">ROOM MEMBERS</div>
+            <div id="roster-list" style="font-size:12px; color:#ddd; display:flex; flex-direction:column; gap:4px;">
+                <!-- Members injected here -->
+            </div>
+        </div>
+    </div>
 
     <div class="status-panel">
         <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
@@ -235,29 +317,12 @@
             <button id="btn-scan" class="btn-link">🔄 Scan Tabs</button>
         </div>
 
-        <div class="agent-row">
-            <input type="checkbox" id="chk-gemini" class="agent-checkbox" checked>
-            <label for="chk-gemini">Gemini (App)</label>
-            <div id="status-gemini" class="status-dot"></div>
+        <div id="active-agents-list">
+            <div style="font-size:12px; color:#555; text-align:center; padding:10px;">Please click Scan to find AI tabs.
+            </div>
         </div>
-
-        <div class="agent-row">
-            <input type="checkbox" id="chk-aistudio" class="agent-checkbox" checked>
-            <label for="chk-aistudio">AI Studio (Clerk)</label>
-            <div id="status-aistudio" class="status-dot"></div>
-        </div>
-
-        <div class="agent-row">
-            <input type="checkbox" id="chk-claude" class="agent-checkbox" checked>
-            <label for="chk-claude">Claude</label>
-            <div id="status-claude" class="status-dot"></div>
-        </div>
-
-        <div class="agent-row">
-            <input type="checkbox" id="chk-gpt" class="agent-checkbox" checked>
-            <label for="chk-gpt">ChatGPT</label>
-            <div id="status-gpt" class="status-dot"></div>
-        </div>
+        <div id="status-gpt" class="status-dot"></div>
+    </div>
     </div>
 
     <div class="toolbar">
@@ -292,6 +357,7 @@
         </div>
     </div>
 
+    <script src="lib/peerjs.min.js"></script>
     <script src="sidepanel.js"></script>
 </body>
 
