@@ -1,99 +1,140 @@
+/**
+ * Driver for Claude (claude.ai)
+ * Adapted from User-Provided "Claude.ai Chrome Plugin Guide"
+ */
 
-// Driver for Claude (claude.ai)
+console.log('Zhufeng Roundtable: Claude Driver Loaded');
 
-console.log('[Roundtable] Claude Driver Loaded');
+const CLAUDE_SELECTORS = {
+    inputBox: 'textarea[placeholder="Reply..."]',
+    sendButton: 'button[aria-label="Send message"]',
+    // Fallback send button strategy: Look for SVG icons in button
+    sendButtonFallbackIcon: 'svg',
+    messages: '[data-test-render-count], .font-claude-message, [data-is-streaming="false"]'
+    // Note: Claude's DOM changes often. We will use a robust harvesting strategy below.
+};
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'DISTRIBUTE_PROMPT') {
+    if (request.action === 'PING') {
+        sendResponse({ status: 'OK', agent: 'Claude' });
+    }
+    else if (request.action === 'DISTRIBUTE_PROMPT') {
         runDistribute(request.prompt, sendResponse);
-        return true; // Keep channel open for async
+        return true; // async
     }
     else if (request.action === 'HARVEST_LATEST') {
-        harvestLatestResponse(sendResponse);
-        return true;
+        const text = harvestLatestResponse();
+        sendResponse({ success: true, text: text });
     }
 });
 
-async function runDistribute(promptText, sendResponse) {
-    console.log('[Roundtable] Claude: Distributing prompt...');
+async function runDistribute(text, sendResponse) {
+    try {
+        console.log('Claude Driver: Distributing:', text);
 
-    // 1. Find Input
-    const inputBox = findInputBox();
-    if (!inputBox) {
-        console.error('Claude: Input box not found');
-        sendResponse({ success: false, error: 'Input not found' });
-        return;
-    }
+        // 1. Find Input
+        // Try precise selector first, then contenteditable fallback
+        const input = document.querySelector(CLAUDE_SELECTORS.inputBox) ||
+            document.querySelector('[contenteditable="true"]');
 
-    // 2. Clear & Fill
-    inputBox.focus();
-    // Claude often uses ProseMirror, standard execCommand works best
-    document.execCommand('selectAll', false, null);
-    document.execCommand('delete', false, null); // Clear existing if any
+        if (!input) throw new Error('Input box not found');
 
-    // Use insertText to simulate typing
-    document.execCommand('insertText', false, promptText);
+        input.focus();
 
-    // Dispatch events just in case
-    inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+        // 2. Insert Text
+        // Claude usually respects value property on the textarea, but dispatch input is key.
+        input.value = text;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
 
-    await new Promise(r => setTimeout(r, 500)); // Wait for UI update
+        // Small delay for UI validation
+        await new Promise(r => setTimeout(r, 500));
 
-    // 3. Click Send
-    const sendBtn = findSendButton();
-    if (sendBtn) {
-        sendBtn.click();
+        // 3. Find Send Button
+        let btn = document.querySelector(CLAUDE_SELECTORS.sendButton);
 
-        // Force a UI update manually if click fails
-        setTimeout(() => {
-            // Second attempt with MouseEvents
-            const mousedown = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
-            const mouseup = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
-            sendBtn.dispatchEvent(mousedown);
-            sendBtn.dispatchEvent(mouseup);
-        }, 200);
+        if (!btn) {
+            // Fallback: look for button with "Send" in aria-label or title within the input container
+            const container = input.closest('fieldset') || input.closest('div.flex');
+            if (container) {
+                const buttons = container.querySelectorAll('button');
+                // Usually the last button, or one with specific icon
+                btn = buttons[buttons.length - 1];
+            }
+        }
 
-        sendResponse({ success: true });
-    } else {
-        console.error('Claude: Send button not found');
-        sendResponse({ success: false, error: 'Send button missing' });
+        if (btn && !btn.disabled) {
+            btn.click();
+            sendResponse({ success: true });
+        } else {
+            // Try Enter key
+            console.warn('Claude Driver: Send button not found/disabled. Trying Enter.');
+            const enterEvt = new KeyboardEvent('keydown', {
+                key: 'Enter', code: 'Enter', keyCode: 13,
+                bubbles: true, cancelable: true
+            });
+            input.dispatchEvent(enterEvt);
+            sendResponse({ success: true, warning: 'Sent via Enter fallback' });
+        }
+
+    } catch (e) {
+        console.error('Claude Distribute Error:', e);
+        sendResponse({ success: false, error: e.message });
     }
 }
 
-function findInputBox() {
-    // Claude typically uses a contenteditable div with ProseMirror class
-    return document.querySelector('div[contenteditable="true"].ProseMirror') ||
-        document.querySelector('div[contenteditable="true"]');
-}
+function harvestLatestResponse() {
+    try {
+        // Strategy: Find all message groups/items and get the last one that is from the Assistant.
+        // Claude's DOM is tricky. 
+        // We look for elements that look like message bubbles.
+        // Usually: <div class="font-claude-message ...">
 
-function findSendButton() {
-    // Look for button with aria-label or SVG icon
-    const buttons = Array.from(document.querySelectorAll('button'));
-    return buttons.find(b => {
-        const label = b.getAttribute('aria-label') || '';
-        return label.toLowerCase().includes('send message') ||
-            // Often checked by SVG path or class if label missing
-            (b.innerHTML.includes('svg') && !b.disabled);
-    });
-}
+        const possibleMessages = document.querySelectorAll('.font-claude-message, [data-test-render-count]');
 
-function harvestLatestResponse(sendResponse) {
-    // Claude chat messages are structured in specific containers. 
-    // Usually .font-claude-message or similar.
-    // We look for the last assistant message.
+        if (possibleMessages.length === 0) {
+            // Fallback: search for generic text blocks in the main area
+            return fallbackHarvest();
+        }
 
-    // As of late 2024/early 2025, Claude structure varies.
-    // Strategy: Find all message containers, filter for "Assistant" or "Claude", take last.
+        // Iterate backwards
+        for (let i = possibleMessages.length - 1; i >= 0; i--) {
+            const msg = possibleMessages[i];
 
-    // This is a generic heuristic scan
-    const potentialContainers = document.querySelectorAll('.font-claude-message, .grid-cols-1 .text-base');
+            // Filter out User messages
+            // User messages usually have a different font class or container
+            // Claude messages often have .font-claude-message
 
-    if (potentialContainers.length > 0) {
-        const lastMsg = potentialContainers[potentialContainers.length - 1];
-        const text = lastMsg.innerText;
-        sendResponse({ success: true, text: text });
-    } else {
-        // Fallback: search for last generic message text block
-        sendResponse({ success: false, error: 'No response found' });
+            // Check if it's the User
+            const isUser = msg.closest('[data-testid="user-message"]');
+            // OR check content heuristics
+            if (isUser) continue;
+
+            // If we found a candidate, return its text
+            return cleanText(msg.innerText);
+        }
+
+        return "[No Claude response found]";
+
+    } catch (e) {
+        return `[Harvest Error: ${e.message}]`;
     }
+}
+
+function fallbackHarvest() {
+    // Basic fallback: Grab the last meaningful text block
+    const articles = document.querySelectorAll('div.grid-cols-1 > div');
+    if (articles.length > 0) {
+        const last = articles[articles.length - 1];
+        return cleanText(last.innerText);
+    }
+    return "[No response found - selectors failed]";
+}
+
+function cleanText(text) {
+    if (!text) return "";
+    return text
+        .replace(/^Thinking\.\.\./i, '')
+        .replace(/Copy\nEdit/g, '') // Common UI artifacts
+        .trim();
 }
