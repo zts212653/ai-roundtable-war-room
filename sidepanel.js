@@ -305,10 +305,14 @@ async function harvestResponses() {
                 action: 'HARVEST_LATEST'
             }, (res) => {
                 if (chrome.runtime.lastError) {
-                    // Feedback on connection loss
                     logSystem(`${agent.name}: Connection Error (Reload AI Tab?)`);
                 } else if (res && res.success) {
-                    const isDup = chatHistory.length > 0 && chatHistory[chatHistory.length - 1].text === res.text;
+                    // Smart Duplicate Check:
+                    // Check if the LAST message from THIS agent is identical.
+                    const lastMsgFromAgent = chatHistory.slice().reverse().find(m => m.sender === agent.name);
+
+                    const isDup = lastMsgFromAgent && lastMsgFromAgent.text === res.text;
+
                     if (!isDup) {
                         addMessage(agent.name, res.text, agent.style);
                     } else {
