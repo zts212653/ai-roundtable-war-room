@@ -1,0 +1,62 @@
+{
+    "manifest_version": 3,
+    "name": "AI Roundtable (War Room)",
+    "version": "1.0",
+    "description": "Orchestrate debates between Gemini, Claude, and ChatGPT from a single Side Panel.",
+    "permissions": [
+        "sidePanel",
+        "tabs",
+        "tabGroups",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://gemini.google.com/*",
+        "https://aistudio.google.com/*",
+        "https://claude.ai/*",
+        "https://chatgpt.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "side_panel": {
+        "default_path": "sidepanel.html"
+    },
+    "action": {
+        "default_title": "Open War Room"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://aistudio.google.com/*"
+            ],
+            "js": [
+                "drivers/driver_aistudio.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://gemini.google.com/*"
+            ],
+            "js": [
+                "drivers/driver_gemini_app.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://claude.ai/*"
+            ],
+            "js": [
+                "drivers/driver_claude.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://chatgpt.com/*"
+            ],
+            "js": [
+                "drivers/driver_chatgpt.js"
+            ]
+        }
+    ]
+}

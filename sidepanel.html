@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            padding: 12px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        h2 {
+            margin-top: 5px;
+            margin-bottom: 5px;
+            color: #fff;
+            text-align: center;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-panel {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #333;
+        }
+
+        .agent-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .agent-checkbox {
+            margin-right: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #555;
+            margin-left: auto;
+        }
+
+        .status-dot.active {
+            background: #4caf50;
+            box-shadow: 0 0 5px #4caf50;
+        }
+
+        .status-dot.missing {
+            background: #f44336;
+        }
+
+        .chat-stream {
+            flex-grow: 1;
+            overflow-y: auto;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .message-block {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            position: relative;
+        }
+
+        .message-block:hover .msg-controls {
+            opacity: 1;
+        }
+
+        .msg-sender {
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .sender-gemini {
+            color: #4facfe;
+        }
+
+        .sender-claude {
+            color: #d7a159;
+        }
+
+        .sender-gpt {
+            color: #10a37f;
+        }
+
+        .sender-user {
+            color: #aaa;
+        }
+
+        .sender-aistudio {
+            color: #ff5252;
+        }
+
+        .msg-content {
+            white-space: pre-wrap;
+            outline: none;
+            padding: 6px;
+            border-radius: 4px;
+            background: #1a1a1a;
+            margin-top: 4px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .msg-content:focus {
+            background: #2a2a2a;
+            box-shadow: 0 0 0 1px #555;
+        }
+
+        .msg-controls {
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 10px;
+        }
+
+        .btn-mini {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            opacity: 0.7;
+            color: #ccc;
+        }
+
+        .btn-mini:hover {
+            opacity: 1;
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 70px;
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 10px;
+            resize: none;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .btn-broadcast {
+            background: #6200ea;
+            color: white;
+        }
+
+        .btn-harvest {
+            background: #009688;
+            color: white;
+        }
+
+        .btn-link {
+            background: #333;
+            color: #ccc;
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .mention-tag {
+            background-color: #3d3d3d;
+            color: #ff9800;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>
+        AI Roundtable 🛡️
+        <button id="btn-clear" class="btn-mini" title="Clear All Status">🗑️</button>
+    </h2>
+
+    <div class="status-panel">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+            <span style="font-size:12px; color:#aaa;">PARTICIPANTS</span>
+            <button id="btn-scan" class="btn-link">🔄 Scan Tabs</button>
+        </div>
+
+        <div class="agent-row">
+            <input type="checkbox" id="chk-gemini" class="agent-checkbox" checked>
+            <label for="chk-gemini">Gemini (App)</label>
+            <div id="status-gemini" class="status-dot"></div>
+        </div>
+
+        <div class="agent-row">
+            <input type="checkbox" id="chk-aistudio" class="agent-checkbox" checked>
+            <label for="chk-aistudio">AI Studio (Clerk)</label>
+            <div id="status-aistudio" class="status-dot"></div>
+        </div>
+
+        <div class="agent-row">
+            <input type="checkbox" id="chk-claude" class="agent-checkbox" checked>
+            <label for="chk-claude">Claude</label>
+            <div id="status-claude" class="status-dot"></div>
+        </div>
+
+        <div class="agent-row">
+            <input type="checkbox" id="chk-gpt" class="agent-checkbox" checked>
+            <label for="chk-gpt">ChatGPT</label>
+            <div id="status-gpt" class="status-dot"></div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <span>WAR ROOM LOG</span>
+        <button id="btn-rollcall" class="btn-link">📢 Roll Call</button>
+    </div>
+
+    <div class="chat-stream" id="chat-stream">
+        <div id="empty-state" class="message-block" style="text-align:center; color:#555; font-style:italic;">
+            War Room initialized.
+            <br>Waiting for orders.
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="toggle-row">
+            <input type="checkbox" id="chk-include-history" checked>
+            <label for="chk-include-history" title="Send previous chat history as context">Include History</label>
+
+            <span style="border-left:1px solid #555; height:12px; margin:0 5px;"></span>
+
+            <input type="checkbox" id="chk-smart-context" checked>
+            <label for="chk-smart-context"
+                title="Exclude an agent's own previous messages from the context sent to them">Smart Context (Exclude
+                Self)</label>
+        </div>
+
+        <textarea id="prompt-input" placeholder="Type instructions for the council..."></textarea>
+        <div style="display:flex; gap:5px;">
+            <button id="btn-distribute" class="btn-broadcast" style="flex:1;">📡 Distribute</button>
+            <button id="btn-collect" class="btn-harvest" style="flex:1;">📥 Collect</button>
+        </div>
+    </div>
+
+    <script src="sidepanel.js"></script>
+</body>
+
+</html>
