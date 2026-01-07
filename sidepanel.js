@@ -246,7 +246,11 @@ function startLanSession(hostMode, guestRoomId = null) {
         peer = null;
     }
 
-    // Initialize Peer with Google STUN servers for better NAT traversal
+    // P2P Config
+    const customHost = document.getElementById('p2p-host').value.trim();
+    const customPort = document.getElementById('p2p-port').value.trim();
+    const customPath = document.getElementById('p2p-path').value.trim();
+
     const peerConfig = {
         config: {
             iceServers: [
@@ -255,8 +259,19 @@ function startLanSession(hostMode, guestRoomId = null) {
                 { urls: 'stun:stun2.l.google.com:19302' }
             ]
         },
-        debug: 1
+        debug: 1 // Errors only
     };
+
+    // Apply custom server overrides if provided
+    if (customHost) {
+        peerConfig.host = customHost;
+        peerConfig.port = customPort ? parseInt(customPort) : (customHost === 'localhost' ? 9000 : 443);
+        peerConfig.path = customPath || '/';
+        // If port is 443, usually secure. But allow override? Default to secure true if 443.
+        peerConfig.secure = (peerConfig.port === 443 || customHost !== 'localhost');
+        logSystem(`Using Custom P2P Server: ${peerConfig.host}:${peerConfig.port}`);
+    }
+
     peer = new Peer(peerConfig);
 
     peer.on('open', (id) => {
