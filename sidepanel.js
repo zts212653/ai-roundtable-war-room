@@ -163,39 +163,50 @@ async function scanForTabs() {
     updateStatusUI('gpt', false);
     updateStatusUI('aistudio', false);
 
-    const foundTabIds = [];
-
+    // We scan all tabs, but we only bind to the LAST one found for each type.
+    // This is simple "latest one wins" logic.
     tabs.forEach(tab => {
         if (tab.url.includes('gemini.google.com')) {
             activeTabs.gemini = tab.id;
-            updateStatusUI('gemini', true);
-            foundTabIds.push(tab.id);
         }
         else if (tab.url.includes('claude.ai')) {
             activeTabs.claude = tab.id;
-            updateStatusUI('claude', true);
-            foundTabIds.push(tab.id);
         }
         else if (tab.url.includes('chatgpt.com')) {
             activeTabs.gpt = tab.id;
-            updateStatusUI('gpt', true);
-            foundTabIds.push(tab.id);
         }
         else if (tab.url.includes('aistudio.google.com')) {
             activeTabs.aistudio = tab.id;
-            updateStatusUI('aistudio', true);
-            foundTabIds.push(tab.id);
         }
     });
 
-    // Removed auto-grouping as per user request ("Don't hard group")
-    if (foundTabIds.length > 0) {
-        logSystem(`Found ${foundTabIds.length} agents. Ready.`);
+    // Collect distinct IDs of the agents we actually bound to
+    const uniqueAgentTabIds = Object.values(activeTabs).filter(id => id !== null);
+
+    // Update UI based on what we found
+    updateStatusUI('gemini', !!activeTabs.gemini);
+    updateStatusUI('claude', !!activeTabs.claude);
+    updateStatusUI('gpt', !!activeTabs.gpt);
+    updateStatusUI('aistudio', !!activeTabs.aistudio);
+
+    if (uniqueAgentTabIds.length > 0) {
+        // Smart Grouping: Only group the active agents.
+        try {
+            const groupId = await chrome.tabs.group({ tabIds: uniqueAgentTabIds });
+            await chrome.tabGroups.update(groupId, {
+                title: 'AI Roundtable',
+                color: 'purple',
+                collapsed: false
+            });
+            logSystem(`Grouped ${uniqueAgentTabIds.length} active agents.`);
+        } catch (e) {
+            console.warn('Grouping failed (maybe different windows?)', e);
+        }
     } else {
         logSystem(`No agents found. Open AI tabs first.`);
     }
 
-    logSystem('Scan complete. Agents linked.');
+    logSystem('Scan complete. Ready.');
 }
 
 function updateStatusUI(agent, isActive) {
