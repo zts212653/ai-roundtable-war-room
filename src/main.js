@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // LAN Listeners
     document.getElementById('btn-lan-toggle').addEventListener('click', () => {
-        document.getElementById('lan-panel').classList.toggle('visible');
+        document.getElementById('lan-panel').classList.toggle('hidden');
     });
 
     // P2P UI Handlers
