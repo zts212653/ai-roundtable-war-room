@@ -3,13 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="sidepanel.css">
+    <link rel="stylesheet" href="sidepanel.dist.css">
 </head>
 
-<body>
+<body class="bg-neutral-950 text-gray-200 font-sans text-sm p-4 flex flex-col h-screen overflow-hidden">
     <h2>
         AI Roundtable 🛡️
-        <div style="margin-left:auto; display:flex; gap:5px;">
+        <div class="ml-auto flex gap-1.5">
             <button id="btn-lan-toggle" class="btn-mini" title="LAN / Multiplayer">🔗</button>
             <button id="btn-clear" class="btn-mini" title="Clear All Status">🗑️</button>
         </div>
@@ -17,82 +17,83 @@
 
     <!-- LAN Panel -->
     <div id="lan-panel" class="lan-panel hidden">
-        <h3 style="margin:0 0 8px 0; font-size:14px; text-transform: uppercase; color:#aaa;">P2P Room</h3>
+        <h3 class="mb-2 text-xs font-medium uppercase text-gray-500 tracking-wider">P2P Room</h3>
 
         <!-- Username -->
-        <div style="margin-bottom:8px; display:flex; align-items:center; gap:5px;">
-            <span style="font-size:12px; color:#888;">Name:</span>
-            <input type="text" id="my-username" class="lan-input" style="margin-bottom:0; flex:1;"
+        <div class="mb-2 flex items-center gap-2">
+            <span class="text-xs text-gray-400">Name:</span>
+            <input type="text" id="my-username" class="lan-input mb-0 flex-1"
                 placeholder="Your Name" value="">
         </div>
 
         <!-- Step 1: Mode Selection -->
-        <div id="p2p-step-1" style="display:flex; gap:5px;">
-            <button id="btn-mode-host" class="btn-link" style="flex:1; background:#333;">🏠 Create Room</button>
-            <button id="btn-mode-join" class="btn-link" style="flex:1; background:#444;">➡️ Join Room</button>
+        <div id="p2p-step-1" class="flex gap-1.5">
+            <button id="btn-mode-host" class="btn-link flex-1 bg-neutral-800 hover:bg-neutral-700">🏠 Create Room</button>
+            <button id="btn-mode-join" class="btn-link flex-1 bg-neutral-800 hover:bg-neutral-700">➡️ Join Room</button>
         </div>
 
         <!-- Step 2: Host View -->
-        <div id="p2p-step-host" class="hidden" style="margin-top:5px;">
-            <div style="font-size:11px; color:#aaa; margin-bottom:4px;">Your Room ID:</div>
+        <div id="p2p-step-host" class="hidden mt-2">
+            <div class="text-[11px] text-gray-400 mb-1">Your Room ID:</div>
             <div id="host-room-id"
-                style="background:#000; padding:8px; color:#4caf50; font-family:monospace; text-align:center; user-select:all; border:1px solid #333; cursor:pointer;"
+                class="bg-black/50 p-2 text-green-400 font-mono text-center select-all border border-neutral-700 cursor-pointer rounded-lg hover:border-green-500/30 transition-colors"
                 title="Click to copy">Generatine...</div>
-            <div style="font-size:10px; color:#666; text-align:center; margin-top:2px;">(Share this with guests)</div>
+            <div class="text-[10px] text-gray-500 text-center mt-1">(Share this with guests)</div>
         </div>
 
         <!-- Step 2: Guest View -->
-        <div id="p2p-step-guest" class="hidden" style="margin-top:5px;">
+        <div id="p2p-step-guest" class="hidden mt-2">
             <input type="text" id="guest-room-input" class="lan-input" placeholder="Paste Room ID here...">
-            <button id="btn-guest-connect" class="btn-link" style="width:100%; background:#2196F3;">Connect</button>
+            <button id="btn-guest-connect" class="btn-link w-full bg-blue-600 hover:bg-blue-500 text-white font-medium border-0 shadow-lg shadow-blue-900/20">Connect</button>
         </div>
 
         <!-- Advanced Settings (PeerServer) -->
-        <details style="margin-top:10px; border:1px solid #444; border-radius:4px; padding:5px;">
-            <summary style="font-size:11px; color:#aaa; cursor:pointer;">Advanced: Custom Server</summary>
-            <div style="margin-top:5px; display:flex; flex-direction:column; gap:5px;">
+        <details class="mt-2.5 border border-white/5 rounded-lg p-1.5 bg-black/10">
+            <summary class="text-[10px] text-gray-500 cursor-pointer outline-none select-none hover:text-gray-300">Advanced: Custom Server</summary>
+            <div class="mt-2 flex flex-col gap-1.5">
                 <input type="text" id="p2p-host" class="lan-input" placeholder="Host (e.g. 0.peerjs.com)" value="">
-                <div style="display:flex; gap:5px;">
+                <div class="flex gap-1.5">
                     <input type="number" id="p2p-port" class="lan-input" placeholder="Port (e.g. 443)" value="">
                     <input type="text" id="p2p-path" class="lan-input" placeholder="Path (e.g. /)" value="">
                 </div>
-                <div style="font-size:10px; color:#666;">Leave empty to use default public server.</div>
+                <div class="text-[10px] text-gray-600">Leave empty to use default public server.</div>
             </div>
         </details>
 
-        <div id="lan-status-msg" class="lan-status" style="margin-top:8px; border-top:1px solid #333; padding-top:4px;">
+        <div id="lan-status-msg" class="lan-status mt-3 border-t border-white/5 pt-2">
             Offline</div>
 
         <!-- Room Roster -->
-        <div id="room-roster" class="hidden" style="margin-top:10px; border-top:1px dashed #444; padding-top:5px;">
-            <div style="font-size:10px; color:#aaa; margin-bottom:5px;">ROOM MEMBERS</div>
-            <div id="roster-list" style="font-size:12px; color:#ddd; display:flex; flex-direction:column; gap:4px;">
+        <div id="room-roster" class="hidden mt-3 border-t border-dashed border-white/10 pt-2">
+            <div class="text-[10px] text-gray-500 mb-2 uppercase tracking-wide">Room Members</div>
+            <div id="roster-list" class="flex flex-col gap-1.5">
                 <!-- Members injected here -->
             </div>
         </div>
     </div>
 
     <div class="status-panel">
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <span style="font-size:12px; color:#aaa;">PARTICIPANTS</span>
-            <button id="btn-scan" class="btn-link">🔄 Scan Tabs</button>
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Participants</span>
+            <button id="btn-scan" class="btn-link text-[10px] py-1 px-2">🔄 Scan Tabs</button>
         </div>
 
         <div id="active-agents-list">
-            <div style="font-size:12px; color:#555; text-align:center; padding:10px;">Please click Scan to find AI tabs.
+            <div class="text-xs text-neutral-500 text-center p-3 italic">Please click Scan to find AI tabs.
             </div>
         </div>
-        <div id="status-gpt" class="status-dot"></div>
+        <div id="status-gpt" class="status-dot hidden"></div>
     </div>
     </div>
 
     <div class="toolbar">
-        <span>WAR ROOM LOG</span>
-        <button id="btn-rollcall" class="btn-link">📢 Roll Call</button>
+        <span>War Room Log</span>
+        <button id="btn-rollcall" class="btn-link text-[10px]">📢 Roll Call</button>
     </div>
 
     <div class="chat-stream" id="chat-stream">
-        <div id="empty-state" class="message-block" style="text-align:center; color:#555; font-style:italic;">
+        <div id="empty-state" class="message-block text-center text-neutral-500 italic py-8">
+            <div class="text-2xl mb-2 grayscale opacity-20">🛡️</div>
             War Room initialized.
             <br>Waiting for orders.
         </div>
@@ -100,21 +101,20 @@
 
     <div class="controls">
         <div class="toggle-row">
-            <input type="checkbox" id="chk-include-history" checked>
+            <input type="checkbox" id="chk-include-history" checked class="accent-purple-600">
             <label for="chk-include-history" title="Send previous chat history as context">Include History</label>
 
-            <span style="border-left:1px solid #555; height:12px; margin:0 5px;"></span>
+            <span class="border-l border-neutral-700 h-3 mx-1"></span>
 
-            <input type="checkbox" id="chk-smart-context" checked>
+            <input type="checkbox" id="chk-smart-context" checked class="accent-purple-600">
             <label for="chk-smart-context"
-                title="Exclude an agent's own previous messages from the context sent to them">Smart Context (Exclude
-                Self)</label>
+                title="Exclude an agent's own previous messages from the context sent to them">Smart Context</label>
         </div>
 
         <textarea id="prompt-input" placeholder="Type instructions for the council..."></textarea>
-        <div style="display:flex; gap:5px;">
-            <button id="btn-distribute" class="btn-broadcast" style="flex:1;">📡 Distribute</button>
-            <button id="btn-collect" class="btn-harvest" style="flex:1;">📥 Collect</button>
+        <div class="flex gap-2">
+            <button id="btn-distribute" class="btn-broadcast flex-1">📡 Distribute</button>
+            <button id="btn-collect" class="btn-harvest flex-1">📥 Collect</button>
         </div>
     </div>
 

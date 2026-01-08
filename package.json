@@ -1,0 +1,32 @@
+{
+  "name": "ai-roundtable-war-room",
+  "version": "1.0.0",
+  "description": "**AI Roundtable** is a Chrome Extension that transforms your browser into a command center for orchestrating debates between multiple AI models.",
+  "main": "background.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zts212653/ai-roundtable-war-room.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/zts212653/ai-roundtable-war-room/issues"
+  },
+  "homepage": "https://github.com/zts212653/ai-roundtable-war-room#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.18"
+  }
+}

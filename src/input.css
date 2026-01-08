@@ -1,0 +1,204 @@
+@import "tailwindcss";
+@source "../sidepanel.html";
+@source "../src/**/*.js";
+@source "../drivers/**/*.js";
+
+@theme {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --animate-fade-in: fadeIn 0.3s ease-out;
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+@layer base {
+    body {
+        @apply bg-neutral-950 text-gray-200 font-sans text-sm p-4 flex flex-col h-screen box-border overflow-hidden;
+    }
+
+    h2 {
+        @apply m-0 mb-3 text-white text-center text-base font-semibold flex justify-center items-center gap-2 drop-shadow-md tracking-tight;
+    }
+
+    /* Custom scrollbar to match the dark theme */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-neutral-900;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-neutral-700 rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-neutral-600;
+    }
+}
+
+@layer components {
+
+    /* Panels */
+    .status-panel,
+    .lan-panel {
+        @apply bg-neutral-900/60 backdrop-blur-xl p-3 rounded-xl mb-3 border border-white/5 shadow-xl hover:border-white/10 transition-all duration-300;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* Chat Area */
+    .chat-stream {
+        @apply flex-grow overflow-y-auto bg-black/20 border border-white/5 rounded-xl p-3 mb-3 shadow-inner relative;
+    }
+
+    /* Messages */
+    .message-block {
+        @apply mb-4 pb-2 animate-fade-in border-b border-white/5;
+    }
+
+    .msg-sender {
+        @apply font-semibold mb-1.5 flex justify-between text-[11px] uppercase tracking-wider items-center opacity-90;
+    }
+
+    .msg-content {
+        @apply whitespace-pre-wrap outline-none p-3 rounded-xl bg-neutral-800/40 text-gray-100 text-sm leading-relaxed border border-transparent focus:bg-neutral-800/80 focus:border-neutral-600 focus:ring-1 focus:ring-purple-500/50 transition-all shadow-sm;
+    }
+
+    /* Sender Colors */
+    .sender-gemini {
+        @apply text-blue-400;
+        filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.3));
+    }
+
+    .sender-claude {
+        @apply text-amber-400;
+        filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.3));
+    }
+
+    .sender-gpt {
+        @apply text-emerald-400;
+        filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.3));
+    }
+
+    .sender-aistudio {
+        @apply text-red-400;
+        filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.3));
+    }
+
+    .sender-user {
+        @apply text-gray-400;
+    }
+
+    /* Controls */
+    .controls {
+        @apply flex flex-col gap-3 mt-auto pt-2;
+    }
+
+    textarea {
+        @apply w-full h-20 bg-neutral-900/80 text-white border border-neutral-800 rounded-xl p-3 resize-none text-sm transition-all focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 placeholder-neutral-600;
+    }
+
+    /* Buttons */
+    button {
+        @apply py-2 px-4 border-0 rounded-lg cursor-pointer font-semibold text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5;
+    }
+
+    .btn-broadcast {
+        @apply bg-gradient-to-r from-violet-700 to-indigo-600 text-white shadow-lg shadow-violet-900/20 hover:brightness-110 hover:shadow-violet-900/40;
+    }
+
+    .btn-harvest {
+        @apply bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-900/20 hover:brightness-110 hover:shadow-teal-900/40;
+    }
+
+    .btn-mini {
+        @apply bg-white/5 text-gray-400 rounded-md px-2 py-1.5 hover:bg-white/10 hover:text-white transition-colors;
+    }
+
+    .btn-link {
+        @apply bg-white/5 text-gray-300 text-xs px-3 py-1.5 hover:bg-white/10 transition-colors border border-white/5;
+    }
+
+    /* Roster */
+    .roster-member {
+        @apply flex flex-col bg-neutral-800/30 rounded-lg p-2.5 border-l-[3px] border-purple-600 mb-2 transition-colors hover:bg-neutral-800/50;
+    }
+
+    .roster-member.is-me {
+        @apply bg-purple-900/10 border-purple-400;
+    }
+
+    .member-header {
+        @apply flex items-center font-semibold text-white text-xs mb-1.5;
+    }
+
+    .member-agents {
+        @apply flex flex-wrap gap-1.5 ml-1 mt-0.5;
+    }
+
+    .agent-badge {
+        @apply text-[10px] bg-black/20 px-2 py-0.5 rounded-full text-gray-300 flex items-center gap-1 border border-white/5 font-medium;
+    }
+
+    .agent-badge.gemini {
+        @apply border-blue-500/20 text-blue-300 bg-blue-900/10;
+    }
+
+    .agent-badge.claude {
+        @apply border-amber-500/20 text-amber-300 bg-amber-900/10;
+    }
+
+    .agent-badge.gpt {
+        @apply border-emerald-500/20 text-emerald-300 bg-emerald-900/10;
+    }
+
+    .agent-badge.aistudio {
+        @apply border-red-500/20 text-red-300 bg-red-900/10;
+    }
+
+    /* Inputs */
+    .lan-input {
+        @apply w-full bg-neutral-950/50 text-white border border-neutral-800 p-2 mb-2 rounded-lg text-sm focus:border-purple-500/50 focus:outline-none transition-colors;
+    }
+
+    .lan-status {
+        @apply text-[10px] tracking-wider text-neutral-500 mt-2 text-center font-mono uppercase opacity-70;
+    }
+
+    .toolbar {
+        @apply flex justify-between items-center mb-1 text-[11px] font-medium text-neutral-500 uppercase tracking-wider px-1;
+    }
+
+    .toggle-row {
+        @apply text-xs text-gray-400 flex items-center gap-3 select-none py-1;
+    }
+
+    /* Status Dot */
+    .status-dot {
+        @apply w-2 h-2 rounded-full bg-neutral-700 ml-auto shadow-sm ring-2 ring-neutral-900;
+    }
+
+    .status-dot.active {
+        @apply bg-green-500;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+    }
+
+    /* Mentions */
+    .mention-tag {
+        @apply text-purple-400 font-semibold bg-purple-500/10 px-1 rounded hover:bg-purple-500/20 transition-colors cursor-pointer;
+    }
+}

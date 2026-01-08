@@ -19,7 +19,8 @@ export function renderHistory(onDelete) {
 
     if (state.chatHistory.length === 0) {
         container.innerHTML = `
-        <div id="empty-state" class="message-block" style="text-align:center; color:#555; font-style:italic;">
+        <div id="empty-state" class="message-block text-center text-neutral-500 italic py-8">
+            <div class="text-2xl mb-2 grayscale opacity-20">🛡️</div>
             War Room initialized.<br>Waiting for orders.
         </div>`;
         return;
@@ -105,7 +106,7 @@ export function renderRoster(myPeerId) {
         header.className = 'member-header';
 
         const roleIcon = member.isHost ? '👑' : '👤';
-        header.innerHTML = `${roleIcon} ${member.name} ${member.id === myPeerId ? '<span style="opacity:0.6;font-weight:normal">(You)</span>' : ''}`;
+        header.innerHTML = `${roleIcon} ${member.name} ${member.id === myPeerId ? '<span class="opacity-60 font-normal ml-1">(You)</span>' : ''}`;
         memberDiv.appendChild(header);
 
         // Agents Line
@@ -129,9 +130,8 @@ export function renderRoster(myPeerId) {
         } else {
             // No agents active
             const emptyDiv = document.createElement('div');
-            emptyDiv.style.fontSize = '10px';
-            emptyDiv.style.color = '#666';
-            emptyDiv.style.marginLeft = '4px';
+            emptyDiv.className = 'text-[10px] text-neutral-500 ml-1 italic';
+            // emptyDiv.innerText will be set next
             emptyDiv.innerText = '(No active agents)';
             memberDiv.appendChild(emptyDiv);
         }
