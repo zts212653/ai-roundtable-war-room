@@ -5,9 +5,10 @@ import { addMessage, deleteMessage, clearSession } from './chat.js';
 import { distributeToAgents } from './agent-manager.js';
 
 // Access global Peer
-// const Peer = window.Peer;
+const Peer = window.Peer;
 
 export function startLanSession(hostMode, guestRoomId = null) {
+    console.log('startLanSession called', { hostMode, guestRoomId });
     setIsHost(hostMode);
 
     if (state.peer) {

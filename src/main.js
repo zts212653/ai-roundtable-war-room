@@ -22,9 +22,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // P2P UI Handlers
     document.getElementById('btn-mode-host').addEventListener('click', () => {
-        document.getElementById('p2p-step-1').classList.add('hidden');
-        document.getElementById('p2p-step-host').classList.remove('hidden');
-        startLanSession(true);
+        console.log('Host button clicked');
+        try {
+            document.getElementById('p2p-step-1').classList.add('hidden');
+            document.getElementById('p2p-step-host').classList.remove('hidden');
+            startLanSession(true);
+        } catch (e) {
+            console.error('Failed to start host session:', e);
+            alert('Error starting session: ' + e.message);
+        }
     });
 
     document.getElementById('btn-mode-join').addEventListener('click', () => {
